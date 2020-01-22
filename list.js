@@ -19,7 +19,19 @@ window.addEventListener('DOMContentLoaded', function () {
 			links: {"$or":[
 				{"title":{"$exists":true},"path":{"$regex":"^http"}},
 				{"text":{"$exists":true},"youtube_id":{"$exists":true}}
-			]}
+			]},
+
+			bookmarks: {
+				path: {
+					$regex: '^http((?!io.cx).)*$'
+				}, 
+
+				type: 'view',
+				
+				youtube_id: {"$exists":false},
+
+				yid: {"$exists":false}
+			}
 		}
 
 		var filter = filters[hash || 'none'] || filters.default;
@@ -35,8 +47,12 @@ window.addEventListener('DOMContentLoaded', function () {
 			},
 			"limit":40000
 		}, r => {
+
+			var fragment = document.createDocumentFragment();
+
 			(r.items || []).forEach(item => {
-				if(!item.text) return;
+				var title = item.title || item.text;
+				if(!title) return;
 
 				var a = document.createElement('a');
 				a.target = '_blank'
@@ -44,9 +60,11 @@ window.addEventListener('DOMContentLoaded', function () {
 					('https://youtu.be/'+item.yid+'#t='+item.startTime):
 					item.path;
 				
-				a.innerText = item.text;
-				document.body.appendChild(a);
+				a.innerText = title.trim();
+				fragment.appendChild(a);
 			});
+
+			document.body.appendChild(fragment);
 		});
 	};
 });
